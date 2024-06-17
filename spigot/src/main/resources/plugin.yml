@@ -1,0 +1,4 @@
+name: LuckRank
+version: '${project.version}'
+main: de.pcblc.spigot.LuckRank
+api-version: '1.20'

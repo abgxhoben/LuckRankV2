@@ -1,0 +1,3 @@
+name: LuckRank
+version: '${project.version}'
+main: de.pcblc.bungee.LuckRank
