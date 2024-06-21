@@ -1,0 +1,51 @@
+enabled: true #Plugin toggel true or false
+
+database:
+  type: "mysql"  # Can be "mysql" or "sqlite"
+  host: "localhost"
+  port: 3306
+  database: "luckrank"
+  user: "root"
+  password: "password"
+
+webhook:
+  enabled: false
+  url: "YOUR_DISCORD_WEBHOOK_URL_HERE"
+  rankSet:
+    title: "**Rank Set**"
+    titlePlayer: "**Player**"
+    titleTargetPlayer: "**Target Player**"
+    titleRank: "**Rank**"
+    titleDuration: "**Duration**"
+    color: 3066993 # Decimal representation
+    icon_url: "YOUR_icon_url_HERE"
+    footer: "Rank set by LuckRank"
+  rankRemove:
+    title: "**Rank Remove**"
+    titlePlayer: "**Player**"
+    titleTargetPlayer: "**Target Player**"
+    titleRank: "**Rank**"
+    color: 15158332 # Decimal representation
+    icon_url: "YOUR_icon_url_HERE"
+    footer: "Rank removed by LuckRank"
+  permissionSet:
+    title: "**Permission Set**"
+    titlePlayer: "**Player**"
+    titleTarget: "**Target**"
+    titlePermission: "**Permission**"
+    titleValue: "**Value**"
+    color: 3447003 # Decimal representation
+    icon_url: "YOUR_icon_url_HERE"
+    footer: "Permission set by LuckRank"
+  createGroup:
+    title: "**Group Created**"
+    titlePlayer: "**Player**"
+    titleGroupName: "**Group Name**"
+    titleWeight: "**Weight**"
+    titleDisplayName: "**Display Name**"
+    color: 15158332 # Decimal representation
+    icon_url: "YOUR_icon_url_HERE"
+    footer: "Group created by LuckRank"
+
+updateNotificationsEnabled: true #Version Checker true or false
+

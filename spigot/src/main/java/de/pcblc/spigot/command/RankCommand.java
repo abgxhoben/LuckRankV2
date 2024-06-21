@@ -1,7 +1,7 @@
-package de.pcblc.bungee.command;
+package de.pcblc.spigot.command;
 
-import de.pcblc.bungee.manager.MySQLManager;
-import de.pcblc.bungee.manager.VersionChecker;
+import de.pcblc.spigot.MySQLManager;
+import de.pcblc.spigot.VersionChecker;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.data.DataMutateResult;
@@ -10,16 +10,17 @@ import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.MetaNode;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.TabExecutor;
-import net.md_5.bungee.config.Configuration;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -31,20 +32,18 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import static de.pcblc.bungee.LuckRank.PREFIX;
-public class RankCommand extends Command implements TabExecutor {
+import static de.pcblc.spigot.LuckRank.PREFIX;
+public class RankCommand implements CommandExecutor, TabExecutor {
 
     private final Plugin plugin;
     private final LuckPerms luckPerms = LuckPermsProvider.get();
-    private final Configuration config;
-    private final Configuration messagesConfig;
+    private final FileConfiguration config;
     private final VersionChecker versionChecker;
-
-    private final Map<ProxiedPlayer, String> confirmationMap = new ConcurrentHashMap<>();
+    private final Map<Player, String> confirmationMap = new ConcurrentHashMap<>();
     private final MySQLManager mySQLManager;
+    private final FileConfiguration messagesConfig;
 
-    public RankCommand(Plugin plugin, Configuration config, Configuration messagesConfig, VersionChecker versionChecker, MySQLManager mySQLManager) {
-        super("rank", "luckrank.use", "r");
+    public RankCommand(FileConfiguration config, Plugin plugin, FileConfiguration messagesConfig, VersionChecker versionChecker, MySQLManager mySQLManager) {
         this.config = config;
         this.plugin = plugin;
         this.messagesConfig = messagesConfig;
@@ -53,25 +52,29 @@ public class RankCommand extends Command implements TabExecutor {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof ProxiedPlayer)) {
-            return;
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("LuckRank.use")) {
+            sender.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
+            return true;
+        }
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("This command can only be executed by a player.");
+            return true;
         }
 
-        ProxiedPlayer player = (ProxiedPlayer) sender;
+        Player player = (Player) sender;
 
         if (args.length == 0) {
             sendHelp(player);
-            return;
+            return true;
         }
 
         switch (args[0].toLowerCase()) {
             case "set":
                 if (args.length != 4) {
                     sendHelp(player);
-                    return;
+                    return true;
                 }
-
 
                 handleRankSet(player, args[1], args[2], args[3]);
                 break;
@@ -79,7 +82,7 @@ public class RankCommand extends Command implements TabExecutor {
             case "remove":
                 if (args.length != 3) {
                     sendHelp(player);
-                    return;
+                    return true;
                 }
                 handleRankRemove(player, args[1], args[2]);
                 break;
@@ -87,31 +90,15 @@ public class RankCommand extends Command implements TabExecutor {
             case "setperms":
                 if (args.length != 4) {
                     sendHelp(player);
-                    return;
+                    return true;
                 }
                 handlePermissionSet(player, args[1], args[2], args[3]);
-                break;
-
-            case "debug":
-                if (args.length != 1) {
-                    sendHelp(player);
-                    return;
-                }
-                sendDebug(player);
-                break;
-
-            case "notify":
-                if (args.length != 1) {
-                    sendHelp(player);
-                    return;
-                }
-                toggleNotify(player);
                 break;
 
             case "creategroup":
                 if (args.length != 4) {
                     sendHelp(player);
-                    return;
+                    return true;
                 }
 
                 String groupName = args[1];
@@ -122,11 +109,28 @@ public class RankCommand extends Command implements TabExecutor {
                 } catch (NumberFormatException e) {
                     String invalidWeightMessage = messagesConfig.getString("messages.invalidWeight");
                     player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', invalidWeightMessage));
-                    return;
+                    return true;
                 }
                 String displayName = args[3];
 
                 handleCreateGroup(player, groupName, weight, displayName);
+                break;
+
+            case "debug":
+                if (args.length != 1) {
+                    sendHelp(player);
+                    return true;
+                }
+                sendDebug(player);
+                break;
+
+            case "notify":
+                if (args.length != 1) {
+                    sendHelp(player);
+                    return true;
+                }
+                toggleNotify(player);
+                break;
 
             case "help":
                 sendHelp(player);
@@ -136,15 +140,14 @@ public class RankCommand extends Command implements TabExecutor {
                 sendHelp(player);
                 break;
         }
+
+        return true;
     }
+    private void handleRankSet(Player player, String targetPlayerName, String targetGroupName, String time) {
+        Player targetPlayer = Bukkit.getPlayer(targetPlayerName);
 
-    public void handleRankSet(ProxiedPlayer player, String targetPlayerName, String targetGroupName, String time) {
-        ProxiedPlayer targetPlayer = plugin.getProxy().getPlayer(targetPlayerName);
-
-        if (targetPlayer == null || !targetPlayer.isConnected()) {
-
+        if (targetPlayer == null || !targetPlayer.isOnline()) {
             player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotOnline")));
-
             return;
         }
 
@@ -191,115 +194,45 @@ public class RankCommand extends Command implements TabExecutor {
 
         player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', rankSetSuccessfullyMessage));
 
-
-        String targetPlayerServer = targetPlayer != null ? targetPlayer.getServer().getInfo().getName() : "Unknown";
-
-
-        String globalMessage = messagesConfig.getString("messages.globalmessage")
+        String rankSetLogMessage = messagesConfig.getString("messages.rankSetLog")
                 .replace("{player}", player.getName())
                 .replace("{targetPlayer}", targetPlayerName)
                 .replace("{rank}", targetGroupName)
-                .replace("{server}", targetPlayerServer)
                 .replace("{duration}", duration > 0 ? formatDuration(duration) : "Lifetime");
 
-        ProxyServer.getInstance().getPlayers().stream()
+
+        String globalmessage = messagesConfig.getString("messages.globalmessage")
+                .replace("{player}", player.getName())
+                .replace("{targetPlayer}", targetPlayerName)
+                .replace("{rank}", targetGroupName)
+                .replace("{duration}", duration > 0 ? formatDuration(duration) : "Lifetime");
+
+        Bukkit.getLogger().info(PREFIX + ChatColor.translateAlternateColorCodes('&', rankSetLogMessage));
+
+        Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.hasPermission("luckrank.see"))
                 .forEach(playerWithPermission -> {
-                    if (mySQLManager.getNotifyStatus(playerWithPermission.getUniqueId().toString())) {
-                        playerWithPermission.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', globalMessage));
+                    String playerUUID = playerWithPermission.getUniqueId().toString();
+                    if (mySQLManager.getNotifyStatus(playerUUID)) {
+                        playerWithPermission.sendMessage(ChatColor.translateAlternateColorCodes('&', PREFIX + globalmessage));
                     }
                 });
 
         if (config.getBoolean("webhook.enabled", false)) {
             sendWebhook(player.getName(), targetPlayerName, targetGroupName, duration);
         }
-
     }
-    public void handleRankRemove(ProxiedPlayer player, String targetPlayerName, String groupName) {
-        if (confirmationMap.containsKey(player) && confirmationMap.get(player).equals(targetPlayerName + ":" + groupName)) {
-            confirmationMap.remove(player);
-            ProxiedPlayer targetPlayer = plugin.getProxy().getPlayer(targetPlayerName);
-
-            if (!hasRemovePermission(player, groupName)) {
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
-                return;
-            }
-
-            if (targetPlayer == null || !targetPlayer.isConnected()) {
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotOnline")));
-                return;
-            }
-
-            User targetUser = luckPerms.getUserManager().loadUser(targetPlayer.getUniqueId()).join();
-
-            if (targetUser == null) {
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotFound")));
-                return;
-            }
-
-            Node groupNodeToRemove = Node.builder("group." + groupName).build();
-            DataMutateResult resultPermanent = targetUser.data().remove(groupNodeToRemove);
-
-            Node tempGroupNodeToRemove = Node.builder("group." + groupName).expiry(10, TimeUnit.SECONDS).build();
-            DataMutateResult resultTemporary = targetUser.data().remove(tempGroupNodeToRemove);
-
-            if (!resultPermanent.wasSuccessful() && !resultTemporary.wasSuccessful()) {
-                String groupRemoveFailedMessage = messagesConfig.getString("messages.groupRemoveFailed");
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', groupRemoveFailedMessage));
-                return;
-            }
-
-            luckPerms.getUserManager().saveUser(targetUser);
-
-            String rankRemovedMessage = messagesConfig.getString("messages.rankRemoved")
-                    .replace("{player}", targetPlayerName)
-                    .replace("{rank}", groupName);
-
-            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', rankRemovedMessage));
-
-            String rankRemoveLogMessage = messagesConfig.getString("messages.rankRemoveLog")
-                    .replace("{player}", player.getName())
-                    .replace("{targetPlayer}", targetPlayerName)
-                    .replace("{rank}", groupName);
-
-            String targetPlayerServer = targetPlayer != null ? targetPlayer.getServer().getInfo().getName() : "Unknown";
-
-            String globalmessageremove = messagesConfig.getString("messages.globalmessageremove")
-                    .replace("{player}", player.getName())
-                    .replace("{targetPlayer}", targetPlayerName)
-                    .replace("{rank}", groupName)
-                    .replace("{server}", targetPlayerServer);
-
-            ProxyServer.getInstance().getPlayers().stream()
-                    .filter(p -> p.hasPermission("luckrank.see"))
-                    .forEach(playerWithPermission -> {
-                        if (mySQLManager.getNotifyStatus(playerWithPermission.getUniqueId().toString())) {
-                            playerWithPermission.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', globalmessageremove));
-                        }
-                    });
-
-            if (config.getBoolean("webhook.enabled", false)) {
-                sendRankRemoveWebhook(player.getName(), targetPlayerName, groupName);
-            }
-
-            plugin.getLogger().info(rankRemoveLogMessage);
-        } else {
-            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.confirmationWarning")));
-            confirmationMap.put(player, targetPlayerName + ":" + groupName);
-            ProxyServer.getInstance().getScheduler().schedule(plugin, () -> confirmationMap.remove(player), 30, TimeUnit.SECONDS);
-        }
-    }
-    public void handlePermissionSet(ProxiedPlayer player, String targetName, String permission, String value) {
+    public void handlePermissionSet(Player player, String targetName, String permission, String value) {
         if (luckPerms.getGroupManager().isLoaded(targetName)) {
             Group targetGroup = luckPerms.getGroupManager().getGroup(targetName);
 
-            if (!hasSetPermsPermission(player, permission)) {
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
+            if (targetGroup == null) {
+                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotFound")));
                 return;
             }
 
-            if (targetGroup == null) {
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotFound")));
+            if (!hasSetPermsPermission(player, permission)) {
+                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
                 return;
             }
 
@@ -341,11 +274,12 @@ public class RankCommand extends Command implements TabExecutor {
                     .replace("{permission}", permission)
                     .replace("{value}", value);
 
-            ProxyServer.getInstance().getPlayers().stream()
+            Bukkit.getOnlinePlayers().stream()
                     .filter(p -> p.hasPermission("luckrank.see"))
                     .forEach(playerWithPermission -> {
-                        if (mySQLManager.getNotifyStatus(playerWithPermission.getUniqueId().toString())) {
-                            playerWithPermission.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', globalmessagepermission));
+                        String playerUUID = playerWithPermission.getUniqueId().toString();
+                        if (mySQLManager.getNotifyStatus(playerUUID)) {
+                            playerWithPermission.sendMessage(ChatColor.translateAlternateColorCodes('&', PREFIX + globalmessagepermission));
                         }
                     });
 
@@ -356,9 +290,9 @@ public class RankCommand extends Command implements TabExecutor {
             plugin.getLogger().info(permissionSetLogMessage);
         } else {
 
-            ProxiedPlayer targetPlayer = plugin.getProxy().getPlayer(targetName);
+            Player targetPlayer = plugin.getServer().getPlayer(targetName);
 
-            if (targetPlayer == null || !targetPlayer.isConnected()) {
+            if (targetPlayer == null || !targetPlayer.isOnline()) {
                 player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotOnline")));
                 return;
             }
@@ -394,7 +328,7 @@ public class RankCommand extends Command implements TabExecutor {
                     .replace("{permission}", permission)
                     .replace("{value}", value);
 
-            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', permissionSetMessage));
+            player.sendMessage(PREFIX + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', permissionSetMessage));
 
             String permissionSetLogMessage = messagesConfig.getString("messages.permissionSetLog")
                     .replace("{player}", player.getName())
@@ -402,20 +336,19 @@ public class RankCommand extends Command implements TabExecutor {
                     .replace("{permission}", permission)
                     .replace("{value}", value);
 
-            String targetPlayerServer = targetPlayer != null ? targetPlayer.getServer().getInfo().getName() : "Unknown";
 
             String globalmessagepermission = messagesConfig.getString("messages.globalmessagepermission")
                     .replace("{player}", player.getName())
                     .replace("{targetPlayer}", targetName)
                     .replace("{permission}", permission)
-                    .replace("{server}", targetPlayerServer)
                     .replace("{value}", value);
 
-            ProxyServer.getInstance().getPlayers().stream()
+            Bukkit.getOnlinePlayers().stream()
                     .filter(p -> p.hasPermission("luckrank.see"))
                     .forEach(playerWithPermission -> {
-                        if (mySQLManager.getNotifyStatus(playerWithPermission.getUniqueId().toString())) {
-                            playerWithPermission.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', globalmessagepermission));
+                        String playerUUID = playerWithPermission.getUniqueId().toString();
+                        if (mySQLManager.getNotifyStatus(playerUUID)) {
+                            playerWithPermission.sendMessage(ChatColor.translateAlternateColorCodes('&', PREFIX + globalmessagepermission));
                         }
                     });
 
@@ -426,7 +359,84 @@ public class RankCommand extends Command implements TabExecutor {
             plugin.getLogger().info(permissionSetLogMessage);
         }
     }
-    public void handleCreateGroup(ProxiedPlayer player, String groupName, int weight, String displayName) {
+    private void handleRankRemove(Player player, String targetPlayerName, String groupName) {
+        if (confirmationMap.containsKey(player) && confirmationMap.get(player).equals(targetPlayerName + ":" + groupName)) {
+            confirmationMap.remove(player);
+
+            Player targetPlayer = plugin.getServer().getPlayer(targetPlayerName);
+
+        if (!hasRemovePermission(player, groupName)) {
+            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
+            return;
+        }
+
+        if (targetPlayer == null || !targetPlayer.isOnline()) {
+            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotOnline")));
+            return;
+        }
+
+        User targetUser = luckPerms.getUserManager().loadUser(targetPlayer.getUniqueId()).join();
+
+        if (targetUser == null) {
+            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.targetPlayerNotFound")));
+            return;
+        }
+
+        Node groupNodeToRemove = Node.builder("group." + groupName).build();
+        DataMutateResult resultPermanent = targetUser.data().remove(groupNodeToRemove);
+
+
+        Node tempGroupNodeToRemove = Node.builder("group." + groupName).expiry(10, TimeUnit.SECONDS).build();
+        DataMutateResult resultTemporary = targetUser.data().remove(tempGroupNodeToRemove);
+
+        if (!resultPermanent.wasSuccessful() && !resultTemporary.wasSuccessful()) {
+            String groupRemoveFailedMessage = messagesConfig.getString("messages.groupRemoveFailed");
+            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', groupRemoveFailedMessage));
+            return;
+        }
+
+        luckPerms.getUserManager().saveUser(targetUser);
+
+        String rankRemovedMessage = messagesConfig.getString("messages.rankRemoved")
+                .replace("{player}", targetPlayerName)
+                .replace("{rank}", groupName);
+
+        player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', rankRemovedMessage));
+
+        String rankRemoveLogMessage = messagesConfig.getString("messages.rankRemoveLog")
+                .replace("{player}", player.getName())
+                .replace("{targetPlayer}", targetPlayerName)
+                .replace("{rank}", groupName);
+
+        String globalmessageremove = messagesConfig.getString("messages.globalmessageremove")
+                .replace("{player}", player.getName())
+                .replace("{targetPlayer}", targetPlayerName)
+                .replace("{rank}", groupName);
+
+            Bukkit.getOnlinePlayers().stream()
+                    .filter(p -> p.hasPermission("luckrank.see"))
+                    .forEach(playerWithPermission -> {
+                        String playerUUID = playerWithPermission.getUniqueId().toString();
+                        if (mySQLManager.getNotifyStatus(playerUUID)) {
+                            playerWithPermission.sendMessage(ChatColor.translateAlternateColorCodes('&', PREFIX + globalmessageremove));
+                        }
+                    });
+
+        if (config.getBoolean("webhook.enabled", false)) {
+            sendRankRemoveWebhook(player.getName(), targetPlayerName, groupName);
+        }
+
+        plugin.getLogger().info(rankRemoveLogMessage);
+
+        } else {
+            player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.confirmationWarning")));
+            confirmationMap.put(player, targetPlayerName + ":" + groupName);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                confirmationMap.remove(player);
+            }, 600L);
+        }
+    }
+    public void handleCreateGroup(Player player, String groupName, int weight, String displayName) {
         if (!player.hasPermission("luckrank.creategroup")) {
             player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.noPermission")));
             return;
@@ -449,7 +459,7 @@ public class RankCommand extends Command implements TabExecutor {
                         .replace("{weight}", String.valueOf(weight))
                         .replace("{displayname}", displayName);
 
-                player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', groupCreatedMessage));
+                player.sendMessage(PREFIX + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', groupCreatedMessage));
 
                 String globalMessageCreateGroup = messagesConfig.getString("messages.globalMessageCreateGroup")
                         .replace("{player}", player.getName())
@@ -457,11 +467,12 @@ public class RankCommand extends Command implements TabExecutor {
                         .replace("{weight}", String.valueOf(weight))
                         .replace("{displayname}", displayName);
 
-                ProxyServer.getInstance().getPlayers().stream()
+                Bukkit.getOnlinePlayers().stream()
                         .filter(p -> p.hasPermission("luckrank.see"))
                         .forEach(playerWithPermission -> {
-                            if (mySQLManager.getNotifyStatus(playerWithPermission.getUniqueId().toString())) {
-                                playerWithPermission.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', globalMessageCreateGroup));
+                            String playerUUID = playerWithPermission.getUniqueId().toString();
+                            if (mySQLManager.getNotifyStatus(playerUUID)) {
+                                playerWithPermission.sendMessage(ChatColor.translateAlternateColorCodes('&', PREFIX + globalMessageCreateGroup));
                             }
                         });
 
@@ -473,16 +484,16 @@ public class RankCommand extends Command implements TabExecutor {
             });
         });
     }
-    private boolean hasPermission(ProxiedPlayer player, String groupName) {
+    private boolean hasPermission(Player player, String groupName) {
         return player.hasPermission("luckrank.set." + groupName.toLowerCase());
     }
-    private boolean hasRemovePermission(ProxiedPlayer player, String groupName) {
+    private boolean hasRemovePermission(Player player, String groupName) {
         return player.hasPermission("luckrank.remove." + groupName.toLowerCase());
     }
-    private boolean hasSetPermsPermission(ProxiedPlayer player, String permission) {
+    private boolean hasSetPermsPermission(Player player, String permission) {
         return player.hasPermission("luckrank.setperms." + permission.toLowerCase());
     }
-    private long parseDuration(ProxiedPlayer player, String time) {
+    private long parseDuration(Player player, String time) {
         if (time.equalsIgnoreCase("-1")) {
             return Long.MIN_VALUE;
         }
@@ -528,7 +539,7 @@ public class RankCommand extends Command implements TabExecutor {
 
         return formatted.toString().trim();
     }
-    private void sendHelp(ProxiedPlayer player) {
+    private void sendHelp(Player player) {
         List<String> groupNames = luckPerms.getGroupManager().getLoadedGroups().stream()
                 .map(Group::getName)
                 .collect(Collectors.toList());
@@ -538,21 +549,21 @@ public class RankCommand extends Command implements TabExecutor {
         String helpMessage = messagesConfig.getString("messages.availableRanks")
                 .replace("{ranks}", availableRanks);
 
-        player.sendMessage(new TextComponent(PREFIX + ChatColor.translateAlternateColorCodes('&', helpMessage)));
+        player.spigot().sendMessage(new TextComponent(PREFIX + ChatColor.translateAlternateColorCodes('&', helpMessage)));
 
         String commandUsageMessage = messagesConfig.getString("messages.commandUsage");
 
-        String[] commandUsages = commandUsageMessage.split("\\n"); // Splitting by newline to get individual usage lines
+        String[] commandUsages = commandUsageMessage.split("\\n");
 
         for (String usage : commandUsages) {
-            TextComponent commandComponent = new TextComponent(PREFIX + ChatColor.translateAlternateColorCodes('&', usage));
+            TextComponent commandComponent = new TextComponent(PREFIX + net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', usage));
             commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, extractCommand(usage)));
-            player.sendMessage(commandComponent);
+            player.spigot().sendMessage(commandComponent);
         }
     }
-    private void sendDebug(ProxiedPlayer player) {
+    private void sendDebug(Player player) {
         String pluginVersion = plugin.getDescription().getVersion();
-        String developerName = plugin.getDescription().getAuthor();
+        String developerName = plugin.getDescription().getAuthors().toString();
 
         boolean webhookEnabled = config.getBoolean("webhook.enabled", false);
         String webhookStatus = webhookEnabled ? "true" : "false";
@@ -570,7 +581,7 @@ public class RankCommand extends Command implements TabExecutor {
 
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', debugMessage));
     }
-    private void toggleNotify(ProxiedPlayer player) {
+    private void toggleNotify(Player player) {
         UUID playerUUID = player.getUniqueId();
         boolean currentStatus = mySQLManager.getNotifyStatus(playerUUID.toString());
         boolean newStatus = !currentStatus;
@@ -581,6 +592,7 @@ public class RankCommand extends Command implements TabExecutor {
 
         player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', message));
     }
+
     private String extractCommand(String message) {
         int start = message.indexOf('/');
         if (start == -1) {
@@ -588,6 +600,7 @@ public class RankCommand extends Command implements TabExecutor {
         }
         return message.substring(start).trim();
     }
+
     private void sendWebhook(String player, String targetPlayer, String rank, long duration) {
         String webhookUrl = config.getString("webhook.url");
         if (webhookUrl == null || webhookUrl.isEmpty()) {
@@ -595,14 +608,15 @@ public class RankCommand extends Command implements TabExecutor {
             return;
         }
 
-        String rankSetTitle = config.getString("webhook.rankSet.title");
-        String rankSetPlayer = config.getString("webhook.rankSet.titlePlayer");
-        String rankSetTargetPlayer = config.getString("webhook.rankSet.titleTargetPlayer");
-        String rankSetRank = config.getString("webhook.rankSet.titleRank");
-        String rankSetDuration = config.getString("webhook.rankSet.titleDuration");
-        int rankSetColor = config.getInt("webhook.rankSet.color");
-        String rankSetFooter = config.getString("webhook.rankSet.footer");
-        String rankSetIconUrl = config.getString("webhook.rankSet.icon_url");
+        String ranksettitle = config.getString("webhook.rankSet.title");
+        String ranksetPlayer = config.getString("webhook.rankSet.titlePlayer");
+        String ranksetTargetPlayer = config.getString("webhook.rankSet.titleTargetPlayer");
+        String ranksetRank = config.getString("webhook.rankSet.titleRank");
+        String ranksetDuration = config.getString("webhook.rankSet.titleDuration");
+        int ranksetcolor = config.getInt("webhook.rankSet.color");
+        String ranksetfooter = config.getString("webhook.rankSet.footer");
+        String rankseticon_url = config.getString("webhook.rankSet.icon_url");
+
 
         try {
             URL url = new URL(webhookUrl);
@@ -611,40 +625,36 @@ public class RankCommand extends Command implements TabExecutor {
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json");
 
-
-            String formattedDuration = (duration > 0) ? formatDuration(duration) : "Lifetime";
-
-            // Erstellen der JSON-Payload für den Webhook
             String jsonPayload = "{\n" +
                     "  \"embeds\": [\n" +
                     "    {\n" +
-                    "      \"title\": \"" + rankSetTitle + "\",\n" +
-                    "      \"color\": " + rankSetColor + ",\n" +
+                    "      \"title\": \"" + ranksettitle + "\",\n" +
+                    "      \"color\":" + ranksetcolor + ",\n" +
                     "      \"fields\": [\n" +
                     "        {\n" +
-                    "          \"name\": \"" + rankSetPlayer + "\",\n" +
+                    "          \"name\": \"" + ranksetPlayer + "\",\n" +
                     "          \"value\": \"" + player + "\",\n" +
                     "          \"inline\": true\n" +
                     "        },\n" +
                     "        {\n" +
-                    "          \"name\": \"" + rankSetTargetPlayer + "\",\n" +
+                    "          \"name\": \""+ ranksetTargetPlayer + "\",\n" +
                     "          \"value\": \"" + targetPlayer + "\",\n" +
                     "          \"inline\": true\n" +
                     "        },\n" +
                     "        {\n" +
-                    "          \"name\": \"" + rankSetRank + "\",\n" +
+                    "          \"name\": \"" + ranksetRank + "\",\n" +
                     "          \"value\": \"" + rank + "\",\n" +
                     "          \"inline\": true\n" +
                     "        },\n" +
                     "        {\n" +
-                    "          \"name\": \"" + rankSetDuration + "\",\n" +
-                    "          \"value\": \"" + formattedDuration + "\",\n" +
+                    "          \"name\": \"" + ranksetDuration + "\",\n" +
+                    "          \"value\": \"" + (duration > 0 ? formatDuration(duration) : "Lifetime") + "\",\n" +
                     "          \"inline\": true\n" +
                     "        }\n" +
                     "      ],\n" +
                     "      \"footer\": {\n" +
-                    "        \"text\": \"" + rankSetFooter + "\",\n" +
-                    "        \"icon_url\": \"" + rankSetIconUrl + "\"\n" +
+                    "        \"text\": \"" + ranksetfooter + "\",\n" +
+                    "        \"icon_url\": \"" + rankseticon_url + "\"\n" +
                     "      }\n" +
                     "    }\n" +
                     "  ]\n" +
@@ -657,17 +667,15 @@ public class RankCommand extends Command implements TabExecutor {
 
             int responseCode = connection.getResponseCode();
             if (responseCode != 204) {
-
                 plugin.getLogger().warning("Failed to send webhook, response code: " + responseCode);
             } else {
-
                 plugin.getLogger().info("Webhook sent successfully.");
             }
         } catch (Exception e) {
-
             plugin.getLogger().log(Level.WARNING, "Failed to send webhook: " + e.getMessage(), e);
         }
     }
+
     private void sendRankRemoveWebhook(String player, String targetPlayer, String rank) {
         String webhookUrl = config.getString("webhook.url");
         if (webhookUrl == null || webhookUrl.isEmpty()) {
@@ -735,6 +743,7 @@ public class RankCommand extends Command implements TabExecutor {
             plugin.getLogger().log(Level.WARNING, "Failed to send Rank Remove webhook: " + e.getMessage(), e);
         }
     }
+
     private void sendPermissionSetWebhook(String player, String targetPlayer, String permission, String value) {
         String webhookUrl = config.getString("webhook.url");
         if (webhookUrl == null || webhookUrl.isEmpty()) {
@@ -744,13 +753,12 @@ public class RankCommand extends Command implements TabExecutor {
 
         String permissionSetTitle = config.getString("webhook.permissionSet.title");
         String permissionSetPlayer = config.getString("webhook.permissionSet.titlePlayer");
-        String permissionSetTarget = config.getString("webhook.permissionSet.titleTarget");
+        String permissionSetTargetPlayer = config.getString("webhook.permissionSet.titleTargetPlayer");
         String permissionSetPermission = config.getString("webhook.permissionSet.titlePermission");
         String permissionSetValue = config.getString("webhook.permissionSet.titleValue");
         int permissionSetColor = config.getInt("webhook.permissionSet.color");
         String permissionSetFooter = config.getString("webhook.permissionSet.footer");
         String permissionSetIconUrl = config.getString("webhook.permissionSet.icon_url");
-
 
         try {
             URL url = new URL(webhookUrl);
@@ -771,7 +779,7 @@ public class RankCommand extends Command implements TabExecutor {
                     "          \"inline\": true\n" +
                     "        },\n" +
                     "        {\n" +
-                    "          \"name\": \"" + permissionSetTarget + "\",\n" +
+                    "          \"name\": \"" + permissionSetTargetPlayer + "\",\n" +
                     "          \"value\": \"" + targetPlayer + "\",\n" +
                     "          \"inline\": true\n" +
                     "        },\n" +
@@ -799,7 +807,6 @@ public class RankCommand extends Command implements TabExecutor {
                 os.flush();
             }
 
-
             int responseCode = connection.getResponseCode();
             if (responseCode != 204) {
                 plugin.getLogger().warning("Failed to send Permission Set webhook, response code: " + responseCode);
@@ -807,9 +814,10 @@ public class RankCommand extends Command implements TabExecutor {
                 plugin.getLogger().info("Permission Set webhook sent successfully.");
             }
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to send Create Group webhook: " + e.getMessage(), e);
+            plugin.getLogger().log(Level.WARNING, "Failed to send Permission Set webhook: " + e.getMessage(), e);
         }
     }
+
     private void sendCreateGroupWebhook(String player, String groupName, int weight, String displayName) {
         String webhookUrl = config.getString("webhook.url");
         if (webhookUrl == null || webhookUrl.isEmpty()) {
@@ -883,8 +891,9 @@ public class RankCommand extends Command implements TabExecutor {
             plugin.getLogger().log(Level.WARNING, "Failed to send Create Group webhook: " + e.getMessage(), e);
         }
     }
+
     @Override
-    public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
@@ -892,10 +901,23 @@ public class RankCommand extends Command implements TabExecutor {
             return completions;
         }
 
-        if (args.length == 2 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("remove"))) {
-            for (ProxiedPlayer onlinePlayer : plugin.getProxy().getPlayers()) {
+        if (args.length == 2 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("remove") || args[0].equalsIgnoreCase("setperms"))) {
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
                 completions.add(onlinePlayer.getName());
             }
+            return completions;
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("creategroup")) {
+        completions.add("NAME");
+        return completions;
+    }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("setperms")) {
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                completions.add(onlinePlayer.getName());
+            }
+            completions.addAll(luckPerms.getGroupManager().getLoadedGroups().stream()
+                    .map(Group::getName)
+                    .collect(Collectors.toList()));
             return completions;
         }
 
@@ -910,21 +932,6 @@ public class RankCommand extends Command implements TabExecutor {
             completions.addAll(luckPerms.getGroupManager().getLoadedGroups().stream()
                     .map(Group::getName)
                     .collect(Collectors.toList()));
-            return completions;
-        }
-
-        if (args.length == 2 && args[0].equalsIgnoreCase("setperms")) {
-            for (ProxiedPlayer onlinePlayer : plugin.getProxy().getPlayers()) {
-                completions.add(onlinePlayer.getName());
-            }
-            completions.addAll(luckPerms.getGroupManager().getLoadedGroups().stream()
-                    .map(Group::getName)
-                    .collect(Collectors.toList()));
-            return completions;
-        }
-
-        if (args.length == 2 && args[0].equalsIgnoreCase("creategroup")) {
-            completions.add("NAME");
             return completions;
         }
 

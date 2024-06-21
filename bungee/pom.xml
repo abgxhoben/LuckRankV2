@@ -12,6 +12,7 @@
     <name>LuckRank</name>
 
     <properties>
+        <author>pcblc</author>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -59,10 +60,6 @@
             <id>Minecraft Libraries</id>
             <url>https://libraries.minecraft.net/</url>
         </repository>
-        <repository>
-            <id>william278-releases</id>
-            <url>https://repo.william278.net/releases/</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -70,12 +67,6 @@
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
             <version>1.21-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.william278</groupId>
-            <artifactId>papiproxybridge</artifactId>
-            <version>1.6.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

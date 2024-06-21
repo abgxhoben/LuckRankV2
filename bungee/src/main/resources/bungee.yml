@@ -1,3 +1,9 @@
 name: LuckRank
-version: '${project.version}'
+version: ${version}
+author: ${author}
 main: de.pcblc.bungee.LuckRank
+softDepends:
+  - LuckPerms
+commands:
+  rank:
+    description: Manages ranks

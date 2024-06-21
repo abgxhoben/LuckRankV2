@@ -1,0 +1,48 @@
+prefix: "&2Luck&aRank &8» &7"
+
+messages:
+  targetPlayerNotOnline: "&cTarget player is not online."
+  noPermission: "&cYou do not have permission to do this."
+  targetPlayerNotFound: "&cTarget player not found."
+  rankUpdated: "&aRank updated to {rank} for {duration}."
+  rankSetSuccessfully: "&aSuccessfully set rank {rank} for {targetPlayer} for {duration}."
+  rankSetLog: "Player {player} set rank {rank} for {targetPlayer} for {duration}."
+  globalmessage: "&e{player} set rank {rank} for {targetPlayer} for {duration}."
+  invalidDurationFormat: "&cInvalid duration format."
+  rankRemoved: "&aRank {rank} removed from player {player}."
+  groupRemoveFailed: "&cFailed to remove group."
+  rankRemoveLog: "Player {player} removed rank {rank} from {targetPlayer}."
+  globalmessageremove: "&e{player} removed rank {rank} from {targetPlayer}."
+  confirmationWarning: "&cPlease run the command again within 30 seconds to confirm the rank removal."
+  permissionSet: "&aPermission {permission} set to {value} for {player}."
+  permissionSetLog: "Player {player} set permission {permission} to {value} for {targetPlayer}."
+  globalmessagepermission: "&e{player} set permission {permission} to {value} for {targetPlayer}."
+  invalidPermissionValue: "&cInvalid permission value. Please use 'true' or 'false'."
+  permissionSetgroup: "&aPermission {permission} set to {value} for group {group}."
+  permissionSetLoggroup: "Player {player} set permission {permission} to {value} for group {group}."
+  globalmessagepermissiongroup: "&e{player} set permission {permission} to {value} for group {group}."
+  availableRanks: "&aAvailable ranks: {ranks}."
+  commandUsage: |
+    &aUsage: /rank set <player> <rank> <duration>
+    &aUsage: /rank remove <player> <rank>
+    &aUsage: /rank setperms <player/group> <permission> <true/false>
+    &aUsage: /rank creategroup <name> <weight> <displayname>
+    &aUsage: /rank debug 
+    &aUsage: /rank notify
+  groupCreateFailed: "&cFailed to create the group."
+  groupCreated: "&aSuccessfully created the group {group} with weight {weight} and display name {displayname}."
+  globalMessageCreateGroup: "&a{player} created the group {group} with weight {weight} and display name {displayname}."
+  invalidWeight: "&cWeight must be a valid integer."
+  debug: |
+    &8&m-----------------------------------------------------------
+    &7LuckRank &2v{version}
+    &7Developer: &2{developer}
+    &7Version: &2{version} {versionstatus}
+    &7Webhook: &2{status}
+    &8&m-----------------------------------------------------------
+  notifyEnabled: "&aNotify has been enabled."
+  notifyDisabled: "&cNotify has been disabled."
+
+update:
+  available: "A new version of LuckRank is available: {version}. Download it from: https://www.spigotmc.org/resources/{resourceId}"
+
