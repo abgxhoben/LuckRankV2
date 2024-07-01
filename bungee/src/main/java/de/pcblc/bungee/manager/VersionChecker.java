@@ -1,5 +1,6 @@
 package de.pcblc.bungee.manager;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
@@ -21,7 +22,7 @@ public class VersionChecker implements Listener {
     private final Configuration config;
     private final Configuration messagesConfig;
     private final MySQLManager mySQLManager;
-
+    private final boolean updateChecked = false;
 
     public VersionChecker(Plugin plugin, int resourceId, Configuration config, Configuration messagesConfig, MySQLManager mySQLManager) {
         this.plugin = plugin;
@@ -29,9 +30,10 @@ public class VersionChecker implements Listener {
         this.config = config;
         this.messagesConfig = messagesConfig;
         this.mySQLManager = mySQLManager;
+        checkForUpdates(true);  // Call this method at plugin startup
     }
 
-    public void checkForUpdates() {
+    public void checkForUpdates(boolean logToConsoleOnly) {
         if (!config.getBoolean("updateNotificationsEnabled", true)) {
             return;
         }
@@ -51,8 +53,11 @@ public class VersionChecker implements Listener {
                                 .replace("{version}", latestVersion)
                                 .replace("{resourceId}", String.valueOf(resourceId));
                         plugin.getLogger().log(Level.INFO, message);
-                        notifyPlayers(message);
+                        if (!logToConsoleOnly) {
+                            notifyPlayers(ChatColor.translateAlternateColorCodes('&', message));
+                        }
                     } else {
+                        plugin.getLogger().log(Level.INFO, "You are using the latest version of the plugin.");
                     }
                 }
             } catch (Exception e) {
@@ -77,7 +82,7 @@ public class VersionChecker implements Listener {
         String playerUUID = player.getUniqueId().toString();
         mySQLManager.setNotifyStatus(playerUUID, true);
         if (player.hasPermission("luckrank.see")) {
-            checkForUpdates();
+            checkForUpdates(false);
         }
     }
 

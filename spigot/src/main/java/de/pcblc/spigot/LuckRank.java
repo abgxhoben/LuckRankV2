@@ -2,6 +2,8 @@ package de.pcblc.spigot;
 
 
 import de.pcblc.spigot.command.RankCommand;
+import de.pcblc.spigot.manager.MySQLManager;
+import de.pcblc.spigot.manager.VersionChecker;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;

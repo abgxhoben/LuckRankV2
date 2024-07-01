@@ -1,7 +1,7 @@
 package de.pcblc.spigot.command;
 
-import de.pcblc.spigot.MySQLManager;
-import de.pcblc.spigot.VersionChecker;
+import de.pcblc.spigot.manager.MySQLManager;
+import de.pcblc.spigot.manager.VersionChecker;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.data.DataMutateResult;

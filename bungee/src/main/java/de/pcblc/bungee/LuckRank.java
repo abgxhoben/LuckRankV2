@@ -40,6 +40,7 @@ public class LuckRank extends Plugin {
             return;
         }
 
+
         if (!mySQLManager.isValidConfig()) {
             getLogger().severe("Database configuration is missing or invalid. Please update the config.yml with your database details.");
             getProxy().getPluginManager().unregisterListeners(this);
