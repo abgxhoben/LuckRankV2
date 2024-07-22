@@ -22,7 +22,7 @@ public class VersionChecker implements Listener {
     private final Configuration config;
     private final Configuration messagesConfig;
     private final MySQLManager mySQLManager;
-    private final boolean updateChecked = false;
+    private boolean updateChecked = false; // Flag to track if the update check has been done
 
     public VersionChecker(Plugin plugin, int resourceId, Configuration config, Configuration messagesConfig, MySQLManager mySQLManager) {
         this.plugin = plugin;
@@ -81,8 +81,13 @@ public class VersionChecker implements Listener {
         ProxiedPlayer player = event.getPlayer();
         String playerUUID = player.getUniqueId().toString();
         mySQLManager.setNotifyStatus(playerUUID, true);
-        if (player.hasPermission("luckrank.see")) {
-            checkForUpdates(false);
+
+        // Überprüfen, ob die Benachrichtigung bereits gesendet wurde
+        if (!updateChecked) {
+            updateChecked = true; // Setze die Flagge auf true, um zu verhindern, dass die Nachricht erneut gesendet wird
+            if (player.hasPermission("luckrank.see")) {
+                checkForUpdates(false); // Überprüfe auf Updates und sende Nachricht nur an den aktuellen Spieler
+            }
         }
     }
 
@@ -105,5 +110,4 @@ public class VersionChecker implements Listener {
         }
         return false;
     }
-
 }

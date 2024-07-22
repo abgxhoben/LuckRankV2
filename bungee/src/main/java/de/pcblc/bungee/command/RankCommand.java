@@ -178,6 +178,12 @@ public class RankCommand extends Command implements TabExecutor {
 
         luckPerms.getUserManager().saveUser(targetUser);
 
+        luckPerms.getUserManager().cleanupUser(targetUser);
+
+        luckPerms.getMessagingService().ifPresent(messagingService -> {
+            messagingService.pushUpdate();
+        });
+
         String rankUpdatedMessage = messagesConfig.getString("messages.rankUpdated")
                 .replace("{rank}", targetGroupName)
                 .replace("{duration}", duration > 0 ? formatDuration(duration) : "Lifetime");
@@ -251,6 +257,12 @@ public class RankCommand extends Command implements TabExecutor {
 
             luckPerms.getUserManager().saveUser(targetUser);
 
+            luckPerms.getUserManager().cleanupUser(targetUser);
+
+            luckPerms.getMessagingService().ifPresent(messagingService -> {
+                messagingService.pushUpdate();
+            });
+
             String rankRemovedMessage = messagesConfig.getString("messages.rankRemoved")
                     .replace("{player}", targetPlayerName)
                     .replace("{rank}", groupName);
@@ -321,6 +333,8 @@ public class RankCommand extends Command implements TabExecutor {
             }
 
             luckPerms.getGroupManager().saveGroup(targetGroup);
+
+
 
             String permissionSetMessage = messagesConfig.getString("messages.permissionSetgroup")
                     .replace("{group}", targetName)
@@ -488,7 +502,7 @@ public class RankCommand extends Command implements TabExecutor {
         }
 
         long totalSeconds = 0;
-        Matcher matcher = Pattern.compile("(\\d+)([dhm])").matcher(time);
+        Matcher matcher = Pattern.compile("(\\d+)([dhwy]|m|min)").matcher(time);
         while (matcher.find()) {
             int value = Integer.parseInt(matcher.group(1));
             String unit = matcher.group(2);
@@ -500,8 +514,17 @@ public class RankCommand extends Command implements TabExecutor {
                 case "h":
                     totalSeconds += value * 3600L; // 60 * 60
                     break;
-                case "m":
+                case "min":
                     totalSeconds += value * 60L;
+                    break;
+                case "m":
+                    totalSeconds += value * 2628000L; // 60 * 60 * 24 * 30.44 (average month)
+                    break;
+                case "w":
+                    totalSeconds += value * 604800L; // 60 * 60 * 24 * 7
+                    break;
+                case "y":
+                    totalSeconds += value * 31536000L; // 60 * 60 * 24 * 365
                     break;
                 default:
                     player.sendMessage(PREFIX + ChatColor.translateAlternateColorCodes('&', messagesConfig.getString("messages.invalidDurationFormat")));
