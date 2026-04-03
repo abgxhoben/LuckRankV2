@@ -66,7 +66,7 @@ public class LuckRank extends Plugin {
         getLogger().info("§6|    |___|  |  /\\  \\___|    < |    |   \\ / __ \\|   |  \\    < ");
         getLogger().info("§6|_______ \\____/  \\___  >__|_ \\|____|_  /(____  /___|  /__|_ \\");
         getLogger().info("§6        \\/           \\/     \\/       \\/      \\/     \\/     \\/");
-        getLogger().info("§6LuckRank Plugin has loaded! | made by pcblc | Discord: https://discord.gg/WhfJhRvgrq");
+        getLogger().info("§6LuckRank Plugin has loaded! | made by pcblc ");
     }
 
     private void loadPrefix() {

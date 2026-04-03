@@ -13,7 +13,6 @@
     <name>LuckRank</name>
 
     <modules>
-        <module>spigot</module>
         <module>bungee</module>
     </modules>
 

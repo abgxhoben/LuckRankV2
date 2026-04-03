@@ -6,9 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="spigot" />
         <module name="bungee" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="spigot" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
