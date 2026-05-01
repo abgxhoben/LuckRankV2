@@ -1,0 +1,10 @@
+de\pcblc\spigot\service\UpdateCheckService.class
+de\pcblc\spigot\service\WebhookService.class
+de\pcblc\spigot\config\SpigotConfigAdapter.class
+de\pcblc\spigot\service\NotificationService.class
+de\pcblc\spigot\util\ResourceConfigurationLoader.class
+de\pcblc\spigot\listener\PlayerJoinListener.class
+de\pcblc\spigot\command\RankCommand.class
+de\pcblc\spigot\service\RankService.class
+de\pcblc\spigot\util\MessageService.class
+de\pcblc\spigot\LuckRankSpigot.class

@@ -1,0 +1,12 @@
+name: LuckRank
+version: 2.2
+main: de.pcblc.spigot.LuckRankSpigot
+author: pcblc
+api-version: "1.13"
+softdepend:
+  - LuckPerms
+commands:
+  rank:
+    description: Manages ranks
+    aliases:
+      - r

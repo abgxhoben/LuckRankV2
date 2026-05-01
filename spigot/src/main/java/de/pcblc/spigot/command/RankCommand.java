@@ -1,21 +1,20 @@
-package de.pcblc.bungee.command;
+package de.pcblc.spigot.command;
 
-import de.pcblc.bungee.service.NotificationService;
-import de.pcblc.bungee.service.RankService;
-import de.pcblc.bungee.service.UpdateCheckService;
-import de.pcblc.bungee.service.WebhookService;
-import de.pcblc.bungee.util.MessageService;
+import de.pcblc.spigot.service.NotificationService;
+import de.pcblc.spigot.service.RankService;
+import de.pcblc.spigot.service.UpdateCheckService;
+import de.pcblc.spigot.service.WebhookService;
+import de.pcblc.spigot.util.MessageService;
 import de.pcblc.common.rank.RankActionResult;
 import de.pcblc.common.rank.RankPermissionResult;
 import de.pcblc.common.util.TimeParser;
 import net.luckperms.api.model.group.Group;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.plugin.TabExecutor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public final class RankCommand extends Command implements TabExecutor {
+public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private final Plugin plugin;
     private final RankService rankService;
@@ -41,7 +40,6 @@ public final class RankCommand extends Command implements TabExecutor {
             WebhookService webhookService,
             MessageService messageService
     ) {
-        super("rank", "luckrank.use", "r");
         this.plugin = plugin;
         this.rankService = rankService;
         this.notificationService = notificationService;
@@ -51,44 +49,45 @@ public final class RankCommand extends Command implements TabExecutor {
     }
 
     @Override
-    public void execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof ProxiedPlayer)) {
-            sender.sendMessage(messageService.toComponents(messageService.prefixed("messages.playersOnly")));
-            return;
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(messageService.prefixed("messages.playersOnly"));
+            return true;
         }
 
-        ProxiedPlayer player = (ProxiedPlayer) sender;
+        Player player = (Player) sender;
         if (args.length == 0) {
             sendHelp(player);
-            return;
+            return true;
         }
 
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "set":
                 handleSet(player, args);
-                return;
+                return true;
             case "remove":
                 handleRemove(player, args);
-                return;
+                return true;
             case "setperms":
                 handleSetPerms(player, args);
-                return;
+                return true;
             case "creategroup":
                 handleCreateGroup(player, args);
-                return;
+                return true;
             case "debug":
                 handleDebug(player, args);
-                return;
+                return true;
             case "notify":
                 handleNotify(player, args);
-                return;
+                return true;
             case "help":
             default:
                 sendHelp(player);
+                return true;
         }
     }
 
-    private void handleSet(ProxiedPlayer actor, String[] args) {
+    private void handleSet(Player actor, String[] args) {
         if (args.length != 4) {
             sendHelp(actor);
             return;
@@ -96,22 +95,22 @@ public final class RankCommand extends Command implements TabExecutor {
 
         TimeParser.Result duration = TimeParser.parse(args[3]);
         if (!duration.isValid()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed("messages.invalidDurationFormat")));
+            actor.sendMessage(messageService.prefixed("messages.invalidDurationFormat"));
             return;
         }
 
         RankActionResult result = rankService.assignRank(actor, args[1], args[2], duration);
         if (!result.isSuccess()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(result.getMessageKey())));
+            actor.sendMessage(messageService.prefixed(result.getMessageKey()));
             return;
         }
 
-        actor.sendMessage(messageService.toComponents(messageService.prefixed(
+        actor.sendMessage(messageService.prefixed(
                 "messages.rankSetSuccessfully",
                 "targetPlayer", args[1],
                 "rank", args[2],
                 "duration", duration.toDisplay()
-        )));
+        ));
 
         notificationService.broadcastToWatchers(messageService.prefixed(
                 "messages.globalmessage",
@@ -125,7 +124,7 @@ public final class RankCommand extends Command implements TabExecutor {
         webhookService.sendRankSet(actor.getName(), args[1], args[2], duration.toDisplay());
     }
 
-    private void handleRemove(ProxiedPlayer actor, String[] args) {
+    private void handleRemove(Player actor, String[] args) {
         if (args.length != 3) {
             sendHelp(actor);
             return;
@@ -133,19 +132,19 @@ public final class RankCommand extends Command implements TabExecutor {
 
         RankActionResult result = rankService.removeRank(actor, args[1], args[2]);
         if (result.requiresConfirmation()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed("messages.confirmationWarning")));
+            actor.sendMessage(messageService.prefixed("messages.confirmationWarning"));
             return;
         }
         if (!result.isSuccess()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(result.getMessageKey())));
+            actor.sendMessage(messageService.prefixed(result.getMessageKey()));
             return;
         }
 
-        actor.sendMessage(messageService.toComponents(messageService.prefixed(
+        actor.sendMessage(messageService.prefixed(
                 "messages.rankRemoved",
                 "player", args[1],
                 "rank", args[2]
-        )));
+        ));
 
         notificationService.broadcastToWatchers(messageService.prefixed(
                 "messages.globalmessageremove",
@@ -158,7 +157,7 @@ public final class RankCommand extends Command implements TabExecutor {
         webhookService.sendRankRemove(actor.getName(), args[1], args[2]);
     }
 
-    private void handleSetPerms(ProxiedPlayer actor, String[] args) {
+    private void handleSetPerms(Player actor, String[] args) {
         if (args.length != 4) {
             sendHelp(actor);
             return;
@@ -166,24 +165,24 @@ public final class RankCommand extends Command implements TabExecutor {
 
         Boolean value = parseBoolean(args[3]);
         if (value == null) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed("messages.invalidPermissionValue")));
+            actor.sendMessage(messageService.prefixed("messages.invalidPermissionValue"));
             return;
         }
 
         RankPermissionResult result = rankService.setPermission(actor, args[1], args[2], value.booleanValue());
         if (!result.isSuccess()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(result.getMessageKey())));
+            actor.sendMessage(messageService.prefixed(result.getMessageKey()));
             return;
         }
 
         String valueText = Boolean.toString(value.booleanValue());
         if (result.isGroupTarget()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(
+            actor.sendMessage(messageService.prefixed(
                     "messages.permissionSetgroup",
                     "group", args[1],
                     "permission", args[2],
                     "value", valueText
-            )));
+            ));
             notificationService.broadcastToWatchers(messageService.prefixed(
                     "messages.globalmessagepermissiongroup",
                     "player", actor.getName(),
@@ -192,12 +191,12 @@ public final class RankCommand extends Command implements TabExecutor {
                     "value", valueText
             ));
         } else {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(
+            actor.sendMessage(messageService.prefixed(
                     "messages.permissionSet",
                     "player", args[1],
                     "permission", args[2],
                     "value", valueText
-            )));
+            ));
             notificationService.broadcastToWatchers(messageService.prefixed(
                     "messages.globalmessagepermission",
                     "player", actor.getName(),
@@ -211,7 +210,7 @@ public final class RankCommand extends Command implements TabExecutor {
         webhookService.sendPermissionSet(actor.getName(), args[1], args[2], valueText);
     }
 
-    private void handleCreateGroup(ProxiedPlayer actor, String[] args) {
+    private void handleCreateGroup(Player actor, String[] args) {
         if (args.length != 4) {
             sendHelp(actor);
             return;
@@ -221,22 +220,22 @@ public final class RankCommand extends Command implements TabExecutor {
         try {
             weight = Integer.parseInt(args[2]);
         } catch (NumberFormatException exception) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed("messages.invalidWeight")));
+            actor.sendMessage(messageService.prefixed("messages.invalidWeight"));
             return;
         }
 
         RankActionResult result = rankService.createGroup(actor, args[1], weight, args[3]);
         if (!result.isSuccess()) {
-            actor.sendMessage(messageService.toComponents(messageService.prefixed(result.getMessageKey())));
+            actor.sendMessage(messageService.prefixed(result.getMessageKey()));
             return;
         }
 
-        actor.sendMessage(messageService.toComponents(messageService.prefixed(
+        actor.sendMessage(messageService.prefixed(
                 "messages.groupCreated",
                 "group", args[1],
                 "weight", String.valueOf(weight),
                 "displayname", args[3]
-        )));
+        ));
 
         notificationService.broadcastToWatchers(messageService.prefixed(
                 "messages.globalMessageCreateGroup",
@@ -249,71 +248,59 @@ public final class RankCommand extends Command implements TabExecutor {
         webhookService.sendCreateGroup(actor.getName(), args[1], weight, args[3]);
     }
 
-    private void handleDebug(ProxiedPlayer actor, String[] args) {
+    private void handleDebug(Player actor, String[] args) {
         if (args.length != 1) {
             sendHelp(actor);
             return;
         }
 
-        actor.sendMessage(messageService.toComponents(messageService.raw(
+        actor.sendMessage(messageService.raw(
                 "messages.debug",
                 "version", plugin.getDescription().getVersion(),
-                "developer", plugin.getDescription().getAuthor(),
+                "developer", String.join(", ", plugin.getDescription().getAuthors()),
                 "versionstatus", updateCheckService.isOutdated() ? "&cOUTDATED" : "&aLATEST",
                 "status", webhookService.isEnabled() ? "true" : "false"
-        )));
+        ));
     }
 
-    private void handleNotify(ProxiedPlayer actor, String[] args) {
+    private void handleNotify(Player actor, String[] args) {
         if (args.length != 1) {
             sendHelp(actor);
             return;
         }
 
         boolean enabled = notificationService.toggle(actor.getUniqueId());
-        String key = enabled ? "messages.notifyEnabled" : "messages.notifyDisabled";
-        actor.sendMessage(messageService.toComponents(messageService.prefixed(key)));
+        actor.sendMessage(messageService.prefixed(enabled ? "messages.notifyEnabled" : "messages.notifyDisabled"));
     }
 
-    private void sendHelp(ProxiedPlayer player) {
+    private void sendHelp(Player player) {
         String groups = rankService.getLoadedGroups().stream()
                 .map(Group::getName)
                 .sorted(String::compareToIgnoreCase)
                 .collect(Collectors.joining(", "));
 
-        player.sendMessage(messageService.toComponents(messageService.prefixed(
+        player.sendMessage(messageService.prefixed(
                 "messages.availableRanks",
                 "ranks", groups.isEmpty() ? "-" : groups
-        )));
+        ));
 
         for (String line : messageService.getLines("messages.commandUsage")) {
-            String text = messageService.prefixedRaw(line);
-            TextComponent component = new TextComponent(TextComponent.fromLegacyText(text));
-            String command = extractCommand(line);
-            if (!command.isEmpty()) {
-                component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command));
-            }
-            player.sendMessage(component);
+            player.sendMessage(messageService.prefixedRaw(line));
         }
     }
 
-    private String extractCommand(String line) {
-        int index = line.indexOf('/');
-        return index >= 0 ? line.substring(index).trim() : "";
-    }
-
-    private Boolean parseBoolean(String value) {
-        if ("true".equalsIgnoreCase(value)) {
+    private Boolean parseBoolean(String input) {
+        if ("true".equalsIgnoreCase(input)) {
             return Boolean.TRUE;
         }
-        if ("false".equalsIgnoreCase(value)) {
+        if ("false".equalsIgnoreCase(input)) {
             return Boolean.FALSE;
         }
         return null;
     }
 
     @Override
-    public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
             return filterByPrefix(Arrays.asList("set", "remove", "setperms", "creategroup", "debug", "notify", "help"), args[0]);
         }
@@ -321,7 +308,7 @@ public final class RankCommand extends Command implements TabExecutor {
         String subCommand = args[0].toLowerCase(Locale.ROOT);
         if (args.length == 2 && ("set".equals(subCommand) || "remove".equals(subCommand) || "setperms".equals(subCommand))) {
             List<String> values = new ArrayList<String>();
-            plugin.getProxy().getPlayers().forEach(player -> values.add(player.getName()));
+            plugin.getServer().getOnlinePlayers().forEach(player -> values.add(player.getName()));
             if ("setperms".equals(subCommand)) {
                 rankService.getLoadedGroups().forEach(group -> values.add(group.getName()));
             }
