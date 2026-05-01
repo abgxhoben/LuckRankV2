@@ -53,6 +53,7 @@ public abstract class BaseRankService<P> {
                     ? InheritanceNode.builder(groupName).build()
                     : InheritanceNode.builder(groupName).expiry(duration.getSeconds(), TimeUnit.SECONDS).build();
             user.data().add(rankNode);
+            user.setPrimaryGroup(groupName);
             luckPerms.getUserManager().saveUser(user).join();
             pushUpdate();
             return RankActionResult.success(getTargetServer(targetPlayer));
