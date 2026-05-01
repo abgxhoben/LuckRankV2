@@ -7,6 +7,6 @@ softdepend:
   - LuckPerms
 commands:
   rank:
-    description: Manages ranks
+    description: Verwalte LuckPerms-Raenge und Rechte
     aliases:
       - r

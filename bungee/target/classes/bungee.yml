@@ -1,9 +1,9 @@
 name: LuckRank
-version: 2.2
+version: 2.3
 author: pcblc
 main: de.pcblc.bungee.LuckRank
 softDepends:
   - LuckPerms
 commands:
   rank:
-    description: Manages ranks
+    description: Verwalte LuckPerms-Raenge und Rechte

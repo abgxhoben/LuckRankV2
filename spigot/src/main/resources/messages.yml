@@ -41,4 +41,4 @@ messages:
   notifyDisabled: "&cNotifications disabled."
 
 update:
-  available: "&eA new LuckRank version is available: {version}. https://www.spigotmc.org/resources/{resourceId}"
+  available: "&eA new LuckRank update is available: &fVersion {version} &7| &aDownload: &fhttps://www.spigotmc.org/resources/{resourceId}"
