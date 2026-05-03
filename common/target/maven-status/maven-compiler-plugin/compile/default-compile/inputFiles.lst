@@ -1,11 +1,11 @@
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\rank\RankPermissionResult.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\util\TimeParser.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\WebhookField.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\config\PluginConfiguration.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\update\SpigotUpdateClient.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\DiscordWebhookPayloadBuilder.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\notification\NotificationRepository.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\DiscordWebhookClient.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\rank\BaseRankService.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\config\ConfigAdapter.java
-C:\Users\Pablo\Desktop\LuckRankV2\common\src\main\java\de\pcblc\common\rank\RankActionResult.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\rank\RankActionResult.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\rank\BaseRankService.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\update\SpigotUpdateClient.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\notification\NotificationRepository.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\config\PluginConfiguration.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\DiscordWebhookClient.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\rank\RankPermissionResult.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\config\ConfigAdapter.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\util\TimeParser.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\WebhookField.java
+C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\common\src\main\java\de\pcblc\common\webhook\DiscordWebhookPayloadBuilder.java
