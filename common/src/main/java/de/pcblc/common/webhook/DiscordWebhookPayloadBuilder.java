@@ -1,5 +1,6 @@
 package de.pcblc.common.webhook;
 
+import java.util.Locale;
 import java.util.List;
 
 public final class DiscordWebhookPayloadBuilder {
@@ -26,11 +27,32 @@ public final class DiscordWebhookPayloadBuilder {
 
         builder.append("],");
         builder.append("\"footer\":{");
-        builder.append("\"text\":\"").append(escape(footerText)).append("\",");
-        builder.append("\"icon_url\":\"").append(escape(footerIconUrl)).append("\"");
+        builder.append("\"text\":\"").append(escape(footerText)).append("\"");
+        if (isValidUrl(footerIconUrl)) {
+            builder.append(",");
+            builder.append("\"icon_url\":\"").append(escape(footerIconUrl)).append("\"");
+        }
         builder.append("}");
         builder.append("}]}");
         return builder.toString();
+    }
+
+    private boolean isValidUrl(String input) {
+        if (input == null) {
+            return false;
+        }
+
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+
+        String lower = trimmed.toLowerCase(Locale.ROOT);
+        if (trimmed.contains("YOUR_") || trimmed.contains("_HERE")) {
+            return false;
+        }
+
+        return lower.startsWith("http://") || lower.startsWith("https://");
     }
 
     private String escape(String input) {

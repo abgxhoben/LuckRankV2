@@ -3,7 +3,7 @@ prefix: "&2Luck&aRank &8>> &7"
 enabled: true
 
 database:
-  type: "mysql"
+  type: "sqlite"
   host: "localhost"
   port: 3306
   database: "luckrank"

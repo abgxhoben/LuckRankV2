@@ -1,9 +1,8 @@
 name: LuckRank
-version: 2.3
+version: 2.5
 main: de.pcblc.spigot.LuckRankSpigot
 author: pcblc
-api-version: "1.13"
-softdepend:
+depend:
   - LuckPerms
 commands:
   rank:

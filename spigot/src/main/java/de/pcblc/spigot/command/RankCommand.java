@@ -308,7 +308,9 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
         String subCommand = args[0].toLowerCase(Locale.ROOT);
         if (args.length == 2 && ("set".equals(subCommand) || "remove".equals(subCommand) || "setperms".equals(subCommand))) {
             List<String> values = new ArrayList<String>();
-            plugin.getServer().getOnlinePlayers().forEach(player -> values.add(player.getName()));
+            for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
+                values.add(onlinePlayer.getName());
+            }
             if ("setperms".equals(subCommand)) {
                 rankService.getLoadedGroups().forEach(group -> values.add(group.getName()));
             }

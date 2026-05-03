@@ -2,8 +2,7 @@ name: LuckRank
 version: ${version}
 main: de.pcblc.spigot.LuckRankSpigot
 author: ${author}
-api-version: "1.13"
-softdepend:
+depend:
   - LuckPerms
 commands:
   rank:

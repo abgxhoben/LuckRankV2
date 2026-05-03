@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <delete file="C:\Users\Pablo\Desktop\LuckRankV2\spigot\target/original-LuckRank-Spigot-2.5.jar" quiet="true" />
+  </target>
+</project>

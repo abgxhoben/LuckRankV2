@@ -87,9 +87,11 @@ public final class WebhookService {
                         configuration.getWebhookValue(section + ".icon_url", ""),
                         fields
                 );
-                int responseCode = webhookClient.post(configuration.getWebhookUrl(), payload);
-                if (responseCode != 204) {
-                    plugin.getLogger().warning("Webhook request failed with response code " + responseCode + ".");
+                DiscordWebhookClient.WebhookResponse response = webhookClient.post(configuration.getWebhookUrl(), payload);
+                if (response.getResponseCode() != 204) {
+                    plugin.getLogger().warning("Webhook request failed with response code "
+                            + response.getResponseCode()
+                            + (response.getResponseBody().isEmpty() ? "." : " and body: " + response.getResponseBody()));
                 }
             } catch (Exception exception) {
                 plugin.getLogger().log(Level.WARNING, "Failed to send webhook.", exception);

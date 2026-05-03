@@ -7,13 +7,16 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public final class NotificationService {
 
     private final LuckRank plugin;
     private final NotificationRepository repository;
+    private final Map<UUID, Boolean> fallbackStates = new ConcurrentHashMap<UUID, Boolean>();
 
     public NotificationService(LuckRank plugin, PluginConfiguration configuration) {
         this.plugin = plugin;
@@ -32,9 +35,15 @@ public final class NotificationService {
     }
 
     public void ensurePlayerExists(UUID playerId) {
+        if (!repository.isAvailable()) {
+            fallbackStates.putIfAbsent(playerId, Boolean.TRUE);
+            return;
+        }
+
         try {
             repository.ensurePlayerExists(playerId);
         } catch (SQLException exception) {
+            fallbackStates.putIfAbsent(playerId, Boolean.TRUE);
             plugin.getLogger().log(Level.WARNING, "Could not insert notification preference.", exception);
         }
     }
@@ -46,11 +55,16 @@ public final class NotificationService {
     }
 
     public boolean isEnabled(UUID playerId) {
+        if (!repository.isAvailable()) {
+            return fallbackStates.getOrDefault(playerId, Boolean.TRUE).booleanValue();
+        }
+
         try {
             return repository.getNotificationState(playerId);
         } catch (SQLException exception) {
+            fallbackStates.putIfAbsent(playerId, Boolean.TRUE);
             plugin.getLogger().log(Level.WARNING, "Could not read notification preference.", exception);
-            return true;
+            return fallbackStates.getOrDefault(playerId, Boolean.TRUE).booleanValue();
         }
     }
 
@@ -71,6 +85,11 @@ public final class NotificationService {
     }
 
     private void setEnabled(UUID playerId, boolean enabled) {
+        fallbackStates.put(playerId, Boolean.valueOf(enabled));
+        if (!repository.isAvailable()) {
+            return;
+        }
+
         try {
             repository.setNotificationState(playerId, enabled);
         } catch (SQLException exception) {
