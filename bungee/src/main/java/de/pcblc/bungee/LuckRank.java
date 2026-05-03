@@ -20,40 +20,15 @@ import java.util.logging.Level;
 public final class LuckRank extends Plugin {
 
     private NotificationService notificationService;
+    private UpdateCheckService updateCheckService;
+    private MessageService messageService;
+    private ResourceConfigurationLoader configurationLoader;
 
     @Override
     public void onEnable() {
         try {
-            ResourceConfigurationLoader configurationLoader = new ResourceConfigurationLoader(this);
-            Configuration config = configurationLoader.load("config.yml");
-            Configuration messages = configurationLoader.load("messages.yml");
-
-            PluginConfiguration pluginConfiguration = new PluginConfiguration(new BungeeConfigAdapter(config));
-            if (!pluginConfiguration.isEnabled()) {
-                getLogger().warning("LuckRank is disabled in config.yml.");
-                return;
-            }
-
-            MessageService messageService = new MessageService(messages, config.getString("prefix", "&2Luck&aRank &8>> &7"));
-            LuckPerms luckPerms = LuckPermsProvider.get();
-
-            this.notificationService = new NotificationService(this, pluginConfiguration);
-            notificationService.initialize();
-
-            UpdateCheckService updateCheckService = new UpdateCheckService(this, pluginConfiguration, messageService);
-            RankService rankService = new RankService(this, luckPerms);
-            WebhookService webhookService = new WebhookService(this, pluginConfiguration);
-
-            getProxy().getPluginManager().registerCommand(
-                    this,
-                    new RankCommand(this, rankService, notificationService, updateCheckService, webhookService, messageService)
-            );
-            getProxy().getPluginManager().registerListener(
-                    this,
-                    new PlayerJoinListener(notificationService, updateCheckService)
-            );
-
-            updateCheckService.checkForUpdates(true, false);
+            configurationLoader = new ResourceConfigurationLoader(this);
+            loadRuntimeState();
             getLogger().info("LuckRank enabled successfully.");
         } catch (Exception exception) {
             getLogger().log(Level.SEVERE, "LuckRank could not be enabled.", exception);
@@ -65,5 +40,60 @@ public final class LuckRank extends Plugin {
         if (notificationService != null) {
             notificationService.shutdown();
         }
+    }
+
+    public boolean reloadPluginState() {
+        try {
+            loadRuntimeState();
+            return true;
+        } catch (Exception exception) {
+            getLogger().log(Level.SEVERE, "LuckRank could not be reloaded.", exception);
+            return false;
+        }
+    }
+
+    public MessageService getMessageService() {
+        return messageService;
+    }
+
+    private void loadRuntimeState() {
+        Configuration config = configurationLoader.load("config.yml");
+        Configuration messages = configurationLoader.load("messages.yml");
+
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(new BungeeConfigAdapter(config));
+        if (!pluginConfiguration.isEnabled()) {
+            throw new IllegalStateException("LuckRank is disabled in config.yml.");
+        }
+
+        MessageService loadedMessageService = new MessageService(messages, config.getString("prefix", "&2Luck&aRank &8>> &7"));
+        LuckPerms luckPerms = LuckPermsProvider.get();
+
+        if (notificationService != null) {
+            notificationService.shutdown();
+        }
+
+        NotificationService loadedNotificationService = new NotificationService(this, pluginConfiguration);
+        loadedNotificationService.initialize();
+
+        UpdateCheckService loadedUpdateCheckService = new UpdateCheckService(this, pluginConfiguration, loadedMessageService);
+        RankService rankService = new RankService(this, luckPerms);
+        WebhookService webhookService = new WebhookService(this, pluginConfiguration);
+
+        getProxy().getPluginManager().unregisterCommands(this);
+        getProxy().getPluginManager().unregisterListeners(this);
+        getProxy().getPluginManager().registerCommand(
+                this,
+                new RankCommand(this, rankService, loadedNotificationService, loadedUpdateCheckService, webhookService, loadedMessageService)
+        );
+        getProxy().getPluginManager().registerListener(
+                this,
+                new PlayerJoinListener(loadedNotificationService, loadedUpdateCheckService)
+        );
+
+        notificationService = loadedNotificationService;
+        updateCheckService = loadedUpdateCheckService;
+        messageService = loadedMessageService;
+
+        updateCheckService.checkForUpdates(true, false);
     }
 }

@@ -39,6 +39,7 @@ public final class UpdateCheckService {
                     plugin.getLogger().info(messageService.stripColor(messageService.raw(
                             "update.available",
                             "version", latestVersion,
+                            "new_version", latestVersion,
                             "resourceId", String.valueOf(configuration.getUpdateResourceId())
                     )));
                 } else if (!consoleOnly) {
@@ -64,6 +65,7 @@ public final class UpdateCheckService {
         player.sendMessage(messageService.toComponents(messageService.raw(
                 "update.available",
                 "version", latestVersion,
+                "new_version", latestVersion,
                 "resourceId", String.valueOf(configuration.getUpdateResourceId())
         )));
     }

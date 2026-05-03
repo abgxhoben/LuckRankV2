@@ -80,6 +80,9 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
             case "notify":
                 handleNotify(player, args);
                 return true;
+            case "reload":
+                handleReload(player, args);
+                return true;
             case "help":
             default:
                 sendHelp(player);
@@ -89,7 +92,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleSet(Player actor, String[] args) {
         if (args.length != 4) {
-            sendHelp(actor);
+            sendMissingArgument(actor, args, "player", "rank", "duration");
             return;
         }
 
@@ -126,7 +129,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleRemove(Player actor, String[] args) {
         if (args.length != 3) {
-            sendHelp(actor);
+            sendMissingArgument(actor, args, "player", "rank");
             return;
         }
 
@@ -159,7 +162,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleSetPerms(Player actor, String[] args) {
         if (args.length != 4) {
-            sendHelp(actor);
+            sendMissingArgument(actor, args, "rank", "permission", "true/false");
             return;
         }
 
@@ -212,7 +215,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleCreateGroup(Player actor, String[] args) {
         if (args.length != 4) {
-            sendHelp(actor);
+            sendMissingArgument(actor, args, "name", "weight", "displayname");
             return;
         }
 
@@ -250,7 +253,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleDebug(Player actor, String[] args) {
         if (args.length != 1) {
-            sendHelp(actor);
+            actor.sendMessage(messageService.prefixed("messages.noArgumentsNeeded"));
             return;
         }
 
@@ -265,12 +268,27 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
 
     private void handleNotify(Player actor, String[] args) {
         if (args.length != 1) {
-            sendHelp(actor);
+            actor.sendMessage(messageService.prefixed("messages.noArgumentsNeeded"));
             return;
         }
 
         boolean enabled = notificationService.toggle(actor.getUniqueId());
         actor.sendMessage(messageService.prefixed(enabled ? "messages.notifyEnabled" : "messages.notifyDisabled"));
+    }
+
+    private void handleReload(Player actor, String[] args) {
+        if (args.length != 1) {
+            actor.sendMessage(messageService.prefixed("messages.noArgumentsNeeded"));
+            return;
+        }
+        if (!actor.hasPermission("luckrank.reload")) {
+            actor.sendMessage(messageService.prefixed("messages.noPermission"));
+            return;
+        }
+
+        de.pcblc.spigot.LuckRankSpigot spigotPlugin = (de.pcblc.spigot.LuckRankSpigot) plugin;
+        boolean reloaded = spigotPlugin.reloadPluginState();
+        actor.sendMessage(spigotPlugin.getMessageService().prefixed(reloaded ? "messages.reloadSuccess" : "messages.reloadFailed"));
     }
 
     private void sendHelp(Player player) {
@@ -289,6 +307,19 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private void sendMissingArgument(Player player, String[] args, String... requiredArguments) {
+        int providedArguments = Math.max(0, args.length - 1);
+        if (providedArguments >= requiredArguments.length) {
+            player.sendMessage(messageService.prefixed("messages.tooManyArguments"));
+            return;
+        }
+
+        player.sendMessage(messageService.prefixed(
+                "messages.missingArgument",
+                "argument", "<" + requiredArguments[providedArguments] + ">"
+        ));
+    }
+
     private Boolean parseBoolean(String input) {
         if ("true".equalsIgnoreCase(input)) {
             return Boolean.TRUE;
@@ -302,7 +333,7 @@ public final class RankCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return filterByPrefix(Arrays.asList("set", "remove", "setperms", "creategroup", "debug", "notify", "help"), args[0]);
+            return filterByPrefix(Arrays.asList("set", "remove", "setperms", "creategroup", "debug", "notify", "reload", "help"), args[0]);
         }
 
         String subCommand = args[0].toLowerCase(Locale.ROOT);

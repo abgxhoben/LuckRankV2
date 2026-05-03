@@ -7,6 +7,9 @@ messages:
   invalidDurationFormat: "&cInvalid duration. Example: 30d, 12h, 15min or -1."
   invalidPermissionValue: "&cInvalid permission value. Use true or false."
   invalidWeight: "&cWeight must be a valid integer."
+  missingArgument: "&cMissing argument: {argument}"
+  tooManyArguments: "&cToo many arguments."
+  noArgumentsNeeded: "&cThis subcommand does not take any arguments."
   operationFailed: "&cThe action could not be completed. Check the console for details."
   confirmationWarning: "&cRun the command again within 30 seconds to confirm the rank removal."
   rankSetSuccessfully: "&aSuccessfully set rank {rank} for {targetPlayer} for {duration}."
@@ -22,6 +25,7 @@ messages:
     &7/rank creategroup <name> <weight> <displayname>
     &7/rank debug
     &7/rank notify
+    &7/rank reload
   groupCreateFailed: "&cThe group could not be created."
   groupAlreadyExists: "&cThat group already exists."
   groupCreated: "&aCreated group {group} with weight {weight} and display name {displayname}."
@@ -39,6 +43,8 @@ messages:
     &8&m------------------------------------------------
   notifyEnabled: "&aNotifications enabled."
   notifyDisabled: "&cNotifications disabled."
+  reloadSuccess: "&aLuckRank config and messages reloaded."
+  reloadFailed: "&cLuckRank could not be reloaded. Check the console."
 
 update:
-  available: "&eA new LuckRank update is available: &fVersion {version} &7| &aDownload: &fhttps://www.spigotmc.org/resources/{resourceId}"
+  available: "&eA new LuckRank update is available: &fVersion %new_version% &7| &aDownload: &fhttps://www.spigotmc.org/resources/{resourceId}"

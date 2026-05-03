@@ -32,7 +32,7 @@ public final class MessageService {
     }
 
     public List<String> getLines(String path) {
-        String text = messages.getString(path, "");
+        String text = colorize(resolve(messages.getString(path, "")));
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
@@ -48,11 +48,15 @@ public final class MessageService {
     }
 
     private String resolve(String path, String... placeholders) {
-        String value = messages.getString(path, path);
+        return resolveValue(messages.getString(path, path), placeholders);
+    }
+
+    private String resolveValue(String value, String... placeholders) {
         for (int index = 0; index + 1 < placeholders.length; index += 2) {
             value = value.replace("{" + placeholders[index] + "}", placeholders[index + 1]);
+            value = value.replace("%" + placeholders[index] + "%", placeholders[index + 1]);
         }
-        return value;
+        return value.replace("\\n", "\n");
     }
 
     private String colorize(String text) {
