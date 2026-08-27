@@ -1,5 +1,5 @@
 name: LuckRank
-version: 2.6
+version: 3.0
 main: de.pcblc.spigot.LuckRankSpigot
 author: pcblc
 depend:

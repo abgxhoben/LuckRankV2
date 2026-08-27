@@ -30,7 +30,8 @@ public final class NotificationService {
                 plugin.getLogger().warning("Notification storage is unavailable. Notifications will default to enabled.");
             }
         } catch (SQLException exception) {
-            plugin.getLogger().log(Level.WARNING, "Could not initialize notification storage.", exception);
+            plugin.getLogger().log(Level.WARNING,
+                    "Could not initialize notification storage. Notifications will default to enabled.", exception);
         }
     }
 

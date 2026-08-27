@@ -48,8 +48,12 @@ public final class RankService extends BaseRankService<Player> {
     }
 
     @Override
-    protected void scheduleConfirmationExpiry(UUID actorId) {
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> clearPendingRemoval(actorId), 20L * 30L);
+    protected void scheduleConfirmationExpiry(UUID actorId, String confirmationKey) {
+        plugin.getServer().getScheduler().runTaskLater(
+                plugin,
+                () -> clearPendingRemoval(actorId, confirmationKey),
+                20L * 30L
+        );
     }
 
     @Override

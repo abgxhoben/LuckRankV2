@@ -52,14 +52,18 @@ public final class MessageService {
     }
 
     private String resolveValue(String value, String... placeholders) {
+        if (value == null) {
+            return "";
+        }
         for (int index = 0; index + 1 < placeholders.length; index += 2) {
-            value = value.replace("{" + placeholders[index] + "}", placeholders[index + 1]);
-            value = value.replace("%" + placeholders[index] + "%", placeholders[index + 1]);
+            String replacement = placeholders[index + 1] == null ? "" : placeholders[index + 1];
+            value = value.replace("{" + placeholders[index] + "}", replacement);
+            value = value.replace("%" + placeholders[index] + "%", replacement);
         }
         return value.replace("\\n", "\n");
     }
 
     private String colorize(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
+        return ChatColor.translateAlternateColorCodes('&', text == null ? "" : text);
     }
 }

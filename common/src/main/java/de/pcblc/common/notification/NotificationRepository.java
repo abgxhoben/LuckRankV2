@@ -16,60 +16,56 @@ public final class NotificationRepository {
     private final File dataFolder;
     private Connection connection;
     private boolean available;
+    private boolean mysql;
 
     public NotificationRepository(PluginConfiguration configuration, File dataFolder) {
         this.configuration = configuration;
         this.dataFolder = dataFolder;
     }
 
-    public void initialize() throws SQLException {
-        available = openConnection();
-        if (!available) {
-            return;
-        }
-
-        try (PreparedStatement statement = connection.prepareStatement(
-                "CREATE TABLE IF NOT EXISTS notifications (" +
-                        "player_uuid VARCHAR(36) PRIMARY KEY," +
-                        "notify BOOLEAN NOT NULL DEFAULT TRUE)"
-        )) {
-            statement.executeUpdate();
-        }
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void ensurePlayerExists(UUID playerId) throws SQLException {
-        if (!available) {
-            return;
-        }
-
+    public synchronized void initialize() throws SQLException {
+        close();
         try {
-            try (PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO notifications (player_uuid, notify) VALUES (?, ?) " +
-                            "ON DUPLICATE KEY UPDATE notify = notify"
-            )) {
-                statement.setString(1, playerId.toString());
-                statement.setBoolean(2, true);
-                statement.executeUpdate();
+            available = openConnection();
+            if (!available) {
                 return;
             }
-        } catch (SQLException ignored) {
+
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "CREATE TABLE IF NOT EXISTS notifications (" +
+                            "player_uuid VARCHAR(36) PRIMARY KEY," +
+                            "notify BOOLEAN NOT NULL DEFAULT TRUE)"
+            )) {
+                statement.executeUpdate();
+            }
+        } catch (SQLException exception) {
+            close();
+            throw exception;
+        }
+    }
+
+    public synchronized boolean isAvailable() {
+        return available && connection != null;
+    }
+
+    public synchronized void ensurePlayerExists(UUID playerId) throws SQLException {
+        if (!isAvailable()) {
+            return;
         }
 
-        try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT OR IGNORE INTO notifications (player_uuid, notify) VALUES (?, ?)"
-        )) {
+        String sql = mysql
+                ? "INSERT INTO notifications (player_uuid, notify) VALUES (?, ?) " +
+                        "ON DUPLICATE KEY UPDATE player_uuid = player_uuid"
+                : "INSERT OR IGNORE INTO notifications (player_uuid, notify) VALUES (?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, playerId.toString());
             statement.setBoolean(2, true);
             statement.executeUpdate();
         }
     }
 
-    public boolean getNotificationState(UUID playerId) throws SQLException {
-        if (!available) {
+    public synchronized boolean getNotificationState(UUID playerId) throws SQLException {
+        if (!isAvailable()) {
             return true;
         }
 
@@ -84,8 +80,8 @@ public final class NotificationRepository {
         }
     }
 
-    public void setNotificationState(UUID playerId, boolean enabled) throws SQLException {
-        if (!available) {
+    public synchronized void setNotificationState(UUID playerId, boolean enabled) throws SQLException {
+        if (!isAvailable()) {
             return;
         }
 
@@ -99,33 +95,66 @@ public final class NotificationRepository {
         }
     }
 
-    public void close() throws SQLException {
-        if (connection != null) {
-            connection.close();
+    public synchronized void close() throws SQLException {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } finally {
+            connection = null;
+            available = false;
+            mysql = false;
         }
     }
 
     private boolean openConnection() throws SQLException {
-        if ("mysql".equalsIgnoreCase(configuration.getDatabaseType())) {
+        String databaseType = configuration.getDatabaseType();
+        if (databaseType == null || databaseType.trim().isEmpty()) {
+            databaseType = "sqlite";
+        }
+
+        if ("mysql".equalsIgnoreCase(databaseType.trim())) {
+            mysql = true;
+            loadDriver("com.mysql.cj.jdbc.Driver");
             String host = configuration.getDatabaseHost();
             String database = configuration.getDatabaseName();
             String user = configuration.getDatabaseUser();
             String password = configuration.getDatabasePassword();
 
-            if (host.isEmpty() || database.isEmpty() || user.isEmpty()) {
+            if (host == null || database == null || user == null
+                    || host.trim().isEmpty() || database.trim().isEmpty() || user.trim().isEmpty()) {
+                mysql = false;
                 return false;
             }
 
             connection = DriverManager.getConnection(
-                    "jdbc:mysql://" + host + ":" + configuration.getDatabasePort() + "/" + database,
-                    user,
-                    password
+                    "jdbc:mysql://" + host.trim() + ":" + configuration.getDatabasePort() + "/" + database.trim(),
+                    user.trim(),
+                    password == null ? "" : password
             );
             return true;
         }
 
+        if (!"sqlite".equalsIgnoreCase(databaseType.trim())) {
+            throw new SQLException("Unsupported database type: " + databaseType);
+        }
+
+        if (!dataFolder.exists() && !dataFolder.mkdirs()) {
+            throw new SQLException("Could not create plugin data folder: " + dataFolder.getAbsolutePath());
+        }
+
+        mysql = false;
+        loadDriver("org.sqlite.JDBC");
         File databaseFile = new File(dataFolder, "luckrank.db");
         connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getAbsolutePath());
         return true;
+    }
+
+    private void loadDriver(String className) throws SQLException {
+        try {
+            Class.forName(className);
+        } catch (ClassNotFoundException exception) {
+            throw new SQLException("Database driver is missing: " + className, exception);
+        }
     }
 }

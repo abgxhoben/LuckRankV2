@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public final class SpigotUpdateClient {
 
@@ -15,8 +16,13 @@ public final class SpigotUpdateClient {
         connection.setConnectTimeout(5000);
         connection.setReadTimeout(5000);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            return reader.readLine();
+        try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    connection.getInputStream(), StandardCharsets.UTF_8))) {
+                return reader.readLine();
+            }
+        } finally {
+            connection.disconnect();
         }
     }
 }

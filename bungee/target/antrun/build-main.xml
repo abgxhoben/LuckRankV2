@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="maven-antrun-" default="main">
   <target name="main">
-    <delete file="C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\target/original-LuckRank-Bungee-2.6.jar" quiet="true" />
+    <delete file="/root/autocode/luckrank/bungee/target/original-LuckRank-Bungee-3.0.jar" quiet="true" />
   </target>
 </project>

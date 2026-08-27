@@ -1,6 +1,6 @@
-## Update 2.5
+## Update 3.0
 
-This update improves compatibility, packaging, and stability.
+This release improves rank safety, reload stability, database concurrency, packaging, and compatibility.
 
 ### Changes
 - Reworked the project packaging so the final plugin jars are built more cleanly

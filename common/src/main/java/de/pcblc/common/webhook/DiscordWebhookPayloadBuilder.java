@@ -1,23 +1,36 @@
 package de.pcblc.common.webhook;
 
-import java.util.Locale;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public final class DiscordWebhookPayloadBuilder {
 
     public String buildPayload(String title, int color, String footerText, String footerIconUrl, List<WebhookField> fields) {
+        if (title == null) {
+            title = "LuckRank";
+        }
+        if (footerText == null) {
+            footerText = "LuckRank";
+        }
+        if (fields == null) {
+            fields = Collections.emptyList();
+        }
+
         StringBuilder builder = new StringBuilder();
         builder.append("{\"embeds\":[{");
         builder.append("\"title\":\"").append(escape(title)).append("\",");
         builder.append("\"color\":").append(color).append(",");
         builder.append("\"fields\":[");
 
-        for (int index = 0; index < fields.size(); index++) {
-            if (index > 0) {
+        int writtenFields = 0;
+        for (WebhookField field : fields) {
+            if (field == null) {
+                continue;
+            }
+            if (writtenFields++ > 0) {
                 builder.append(",");
             }
-
-            WebhookField field = fields.get(index);
             builder.append("{");
             builder.append("\"name\":\"").append(escape(field.getName())).append("\",");
             builder.append("\"value\":\"").append(escape(field.getValue())).append("\",");
@@ -48,7 +61,7 @@ public final class DiscordWebhookPayloadBuilder {
         }
 
         String lower = trimmed.toLowerCase(Locale.ROOT);
-        if (trimmed.contains("YOUR_") || trimmed.contains("_HERE")) {
+        if (trimmed.toUpperCase(Locale.ROOT).contains("YOUR_") || trimmed.toUpperCase(Locale.ROOT).contains("_HERE")) {
             return false;
         }
 
@@ -56,6 +69,9 @@ public final class DiscordWebhookPayloadBuilder {
     }
 
     private String escape(String input) {
+        if (input == null) {
+            return "";
+        }
         return input
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")

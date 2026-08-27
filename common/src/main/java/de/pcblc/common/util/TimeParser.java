@@ -12,6 +12,10 @@ public final class TimeParser {
     }
 
     public static Result parse(String input) {
+        if (input == null) {
+            return Result.invalid();
+        }
+        input = input.trim();
         if ("-1".equalsIgnoreCase(input)) {
             return Result.permanent();
         }
@@ -20,28 +24,39 @@ public final class TimeParser {
         Matcher matcher = TOKEN_PATTERN.matcher(normalized);
         long seconds = 0L;
         int consumed = 0;
+        boolean matched = false;
 
         while (matcher.find()) {
+            matched = true;
             consumed += matcher.group(0).length();
-            long amount = Long.parseLong(matcher.group(1));
+            long amount;
+            try {
+                amount = Long.parseLong(matcher.group(1));
+            } catch (NumberFormatException exception) {
+                return Result.invalid();
+            }
             String unit = matcher.group(2);
 
-            if ("d".equals(unit)) {
-                seconds += amount * 86400L;
-            } else if ("h".equals(unit)) {
-                seconds += amount * 3600L;
-            } else if ("min".equals(unit)) {
-                seconds += amount * 60L;
-            } else if ("w".equals(unit)) {
-                seconds += amount * 604800L;
-            } else if ("m".equals(unit)) {
-                seconds += amount * 2628000L;
-            } else if ("y".equals(unit)) {
-                seconds += amount * 31536000L;
+            try {
+                if ("d".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 86400L));
+                } else if ("h".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 3600L));
+                } else if ("min".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 60L));
+                } else if ("w".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 604800L));
+                } else if ("m".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 2628000L));
+                } else if ("y".equals(unit)) {
+                    seconds = Math.addExact(seconds, Math.multiplyExact(amount, 31536000L));
+                }
+            } catch (ArithmeticException exception) {
+                return Result.invalid();
             }
         }
 
-        if (seconds <= 0L || consumed != normalized.length()) {
+        if (!matched || seconds <= 0L || consumed != normalized.length()) {
             return Result.invalid();
         }
 

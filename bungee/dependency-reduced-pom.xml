@@ -3,7 +3,7 @@
   <parent>
     <artifactId>LuckRank</artifactId>
     <groupId>de.pcblc</groupId>
-    <version>2.6</version>
+    <version>3.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>bungee</artifactId>
@@ -35,6 +35,11 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <transformers>
+                <transformer />
+              </transformers>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -71,7 +76,7 @@
     <dependency>
       <groupId>net.md-5</groupId>
       <artifactId>bungeecord-api</artifactId>
-      <version>1.21-R0.1-SNAPSHOT</version>
+      <version>1.21-R0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -1,5 +1,5 @@
 name: LuckRank
-version: 2.6
+version: 3.0
 author: pcblc
 main: de.pcblc.bungee.LuckRank
 softDepends:
@@ -7,3 +7,5 @@ softDepends:
 commands:
   rank:
     description: Verwalte LuckPerms-Raenge und Rechte
+    aliases:
+      - r

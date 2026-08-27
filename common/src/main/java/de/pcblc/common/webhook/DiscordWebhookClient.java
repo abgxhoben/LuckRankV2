@@ -12,15 +12,21 @@ public final class DiscordWebhookClient {
         HttpURLConnection connection = (HttpURLConnection) new URL(webhookUrl).openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
         try (OutputStream outputStream = connection.getOutputStream()) {
             outputStream.write(payload.getBytes(StandardCharsets.UTF_8));
         }
 
-        int responseCode = connection.getResponseCode();
-        String responseBody = readResponseBody(connection, responseCode);
-        return new WebhookResponse(responseCode, responseBody);
+        try {
+            int responseCode = connection.getResponseCode();
+            String responseBody = readResponseBody(connection, responseCode);
+            return new WebhookResponse(responseCode, responseBody);
+        } finally {
+            connection.disconnect();
+        }
     }
 
     private String readResponseBody(HttpURLConnection connection, int responseCode) throws Exception {

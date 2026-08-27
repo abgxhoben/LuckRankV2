@@ -23,6 +23,8 @@ public final class LuckRank extends Plugin {
     private UpdateCheckService updateCheckService;
     private MessageService messageService;
     private ResourceConfigurationLoader configurationLoader;
+    private RankCommand rankCommand;
+    private PlayerJoinListener playerJoinListener;
 
     @Override
     public void onEnable() {
@@ -39,6 +41,12 @@ public final class LuckRank extends Plugin {
     public void onDisable() {
         if (notificationService != null) {
             notificationService.shutdown();
+        }
+        if (rankCommand != null) {
+            getProxy().getPluginManager().unregisterCommand(rankCommand);
+        }
+        if (playerJoinListener != null) {
+            getProxy().getPluginManager().unregisterListener(playerJoinListener);
         }
     }
 
@@ -68,32 +76,73 @@ public final class LuckRank extends Plugin {
         MessageService loadedMessageService = new MessageService(messages, config.getString("prefix", "&2Luck&aRank &8>> &7"));
         LuckPerms luckPerms = LuckPermsProvider.get();
 
-        if (notificationService != null) {
-            notificationService.shutdown();
-        }
-
         NotificationService loadedNotificationService = new NotificationService(this, pluginConfiguration);
         loadedNotificationService.initialize();
 
         UpdateCheckService loadedUpdateCheckService = new UpdateCheckService(this, pluginConfiguration, loadedMessageService);
-        RankService rankService = new RankService(this, luckPerms);
-        WebhookService webhookService = new WebhookService(this, pluginConfiguration);
+        RankService loadedRankService = new RankService(this, luckPerms);
+        WebhookService loadedWebhookService = new WebhookService(this, pluginConfiguration);
+        RankCommand loadedRankCommand = new RankCommand(
+                this,
+                loadedRankService,
+                loadedNotificationService,
+                loadedUpdateCheckService,
+                loadedWebhookService,
+                loadedMessageService
+        );
+        PlayerJoinListener loadedPlayerJoinListener = new PlayerJoinListener(
+                loadedNotificationService,
+                loadedUpdateCheckService
+        );
 
-        getProxy().getPluginManager().unregisterCommands(this);
-        getProxy().getPluginManager().unregisterListeners(this);
-        getProxy().getPluginManager().registerCommand(
-                this,
-                new RankCommand(this, rankService, loadedNotificationService, loadedUpdateCheckService, webhookService, loadedMessageService)
-        );
-        getProxy().getPluginManager().registerListener(
-                this,
-                new PlayerJoinListener(loadedNotificationService, loadedUpdateCheckService)
-        );
+        /*
+         * Prepare the replacement runtime before closing the current one. The
+         * old registrations are retained until the new registrations succeed,
+         * so a failed reload can be rolled back without a dead database handle.
+         */
+        boolean commandRegistered = false;
+        boolean listenerRegistered = false;
+        try {
+            getProxy().getPluginManager().registerCommand(this, loadedRankCommand);
+            commandRegistered = true;
+            getProxy().getPluginManager().registerListener(this, loadedPlayerJoinListener);
+            listenerRegistered = true;
+        } catch (RuntimeException exception) {
+            if (listenerRegistered) {
+                getProxy().getPluginManager().unregisterListener(loadedPlayerJoinListener);
+            }
+            if (commandRegistered) {
+                getProxy().getPluginManager().unregisterCommand(loadedRankCommand);
+            }
+            if (rankCommand != null) {
+                getProxy().getPluginManager().registerCommand(this, rankCommand);
+            }
+            if (playerJoinListener != null) {
+                getProxy().getPluginManager().registerListener(this, playerJoinListener);
+            }
+            loadedNotificationService.shutdown();
+            throw exception;
+        }
+
+        NotificationService oldNotificationService = notificationService;
+        RankCommand oldRankCommand = rankCommand;
+        PlayerJoinListener oldPlayerJoinListener = playerJoinListener;
+        if (oldRankCommand != null) {
+            getProxy().getPluginManager().unregisterCommand(oldRankCommand);
+        }
+        if (oldPlayerJoinListener != null) {
+            getProxy().getPluginManager().unregisterListener(oldPlayerJoinListener);
+        }
 
         notificationService = loadedNotificationService;
         updateCheckService = loadedUpdateCheckService;
         messageService = loadedMessageService;
+        rankCommand = loadedRankCommand;
+        playerJoinListener = loadedPlayerJoinListener;
 
+        if (oldNotificationService != null) {
+            oldNotificationService.shutdown();
+        }
         updateCheckService.checkForUpdates(true, false);
     }
 }

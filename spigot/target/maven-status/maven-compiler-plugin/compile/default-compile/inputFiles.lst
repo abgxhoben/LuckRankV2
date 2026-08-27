@@ -1,10 +1,10 @@
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\listener\PlayerJoinListener.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\util\MessageService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\util\ResourceConfigurationLoader.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\config\SpigotConfigAdapter.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\service\NotificationService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\service\UpdateCheckService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\service\RankService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\LuckRankSpigot.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\command\RankCommand.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\spigot\src\main\java\de\pcblc\spigot\service\WebhookService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/service/RankService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/service/WebhookService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/util/MessageService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/service/NotificationService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/util/ResourceConfigurationLoader.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/config/SpigotConfigAdapter.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/LuckRankSpigot.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/service/UpdateCheckService.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/command/RankCommand.java
+/root/autocode/luckrank/spigot/src/main/java/de/pcblc/spigot/listener/PlayerJoinListener.java

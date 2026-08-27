@@ -3,7 +3,7 @@
   <parent>
     <artifactId>LuckRank</artifactId>
     <groupId>de.pcblc</groupId>
-    <version>2.6</version>
+    <version>3.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>spigot</artifactId>
@@ -35,6 +35,11 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <transformers>
+                <transformer />
+              </transformers>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -71,7 +76,19 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.8.8-R0.1-SNAPSHOT</version>
+      <version>1.8.8-R0.1-20160221.082514-43</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>bungeecord-chat</artifactId>
+          <groupId>net.md-5</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>net.md-5</groupId>
+      <artifactId>bungeecord-chat</artifactId>
+      <version>1.21-R0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

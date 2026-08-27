@@ -49,8 +49,13 @@ public final class RankService extends BaseRankService<ProxiedPlayer> {
     }
 
     @Override
-    protected void scheduleConfirmationExpiry(UUID actorId) {
-        plugin.getProxy().getScheduler().schedule(plugin, () -> clearPendingRemoval(actorId), 30L, TimeUnit.SECONDS);
+    protected void scheduleConfirmationExpiry(UUID actorId, String confirmationKey) {
+        plugin.getProxy().getScheduler().schedule(
+                plugin,
+                () -> clearPendingRemoval(actorId, confirmationKey),
+                30L,
+                TimeUnit.SECONDS
+        );
     }
 
     @Override

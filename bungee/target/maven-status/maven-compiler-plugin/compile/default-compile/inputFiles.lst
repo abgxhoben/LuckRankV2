@@ -1,10 +1,10 @@
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\util\MessageService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\listener\PlayerJoinListener.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\LuckRank.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\service\NotificationService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\util\ResourceConfigurationLoader.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\command\RankCommand.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\service\UpdateCheckService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\config\BungeeConfigAdapter.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\service\RankService.java
-C:\Users\Pablo\Desktop\CherryPVP Coding\LuckRankV2\bungee\src\main\java\de\pcblc\bungee\service\WebhookService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/command/RankCommand.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/LuckRank.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/service/NotificationService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/service/WebhookService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/util/MessageService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/config/BungeeConfigAdapter.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/util/ResourceConfigurationLoader.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/service/UpdateCheckService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/service/RankService.java
+/root/autocode/luckrank/bungee/src/main/java/de/pcblc/bungee/listener/PlayerJoinListener.java
